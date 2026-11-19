@@ -1,0 +1,947 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#4f46e5">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.json">
+<title>دفتر حساب | ثبت درآمد و هزینه</title>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f1f5f9; --card:#ffffff; --ink:#1e293b; --muted:#64748b; --line:#e2e8f0;
+  --pri:#4f46e5; --pri-soft:#eef2ff; --inc:#059669; --inc-soft:#dcf5ea;
+  --exp:#e11d48; --exp-soft:#fde8ef; --r:16px;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bg:#0f172a; --card:#1e293b; --ink:#e2e8f0; --muted:#94a3b8; --line:#334155;
+    --pri-soft:#312e81; --inc-soft:#064e3b; --exp-soft:#4c0519; }
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+body{margin:0; background:var(--bg); color:var(--ink);
+  font-family:Vazirmatn,Tahoma,sans-serif; font-size:15px; padding-bottom:86px}
+.hidden{display:none!important}
+.view{max-width:560px; margin:0 auto; padding:12px}
+.hint{font-size:12.5px; color:var(--muted)}
+
+/* ===== هدر ===== */
+.hdr{max-width:560px; margin:12px auto 4px; padding:18px 16px; border-radius:var(--r);
+  background:linear-gradient(135deg,#4f46e5,#7c3aed); color:#fff; box-shadow:0 6px 18px rgba(79,70,229,.25)}
+.hdr .t{font-size:13px; opacity:.85}
+.hdr .bal{font-size:28px; font-weight:800; margin:4px 0 10px}
+.hdr .chips{display:flex; gap:8px}
+.hdr .chip{background:rgba(255,255,255,.18); border-radius:12px; padding:6px 10px; font-size:12px; flex:1}
+.hdr .chip b{display:block; font-size:15px}
+
+/* ===== کارت ===== */
+.card{background:var(--card); border-radius:var(--r); padding:14px; margin-bottom:12px; box-shadow:0 1px 4px rgba(15,23,42,.06)}
+.card h3{margin:0 0 10px; font-size:15px}
+
+/* ===== فرم ===== */
+label{display:block; font-size:12.5px; color:var(--muted); margin:10px 0 5px}
+input,select,textarea{width:100%; padding:12px; border-radius:12px; border:1.5px solid var(--line);
+  background:var(--card); color:var(--ink); font:inherit; font-size:16px; outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--pri)}
+textarea{min-height:64px; resize:vertical}
+.row2{display:flex; gap:10px} .row2>*{flex:1}
+.fieldwrap{position:relative}
+.fieldwrap .mic{position:absolute; left:8px; top:50%; transform:translateY(-50%)}
+.seg{display:flex; gap:8px; margin-top:4px}
+.seg button{flex:1; padding:12px; border-radius:12px; border:1.5px solid var(--line);
+  background:var(--card); color:var(--muted); font:inherit; font-weight:700}
+.seg #btn-type-exp.on{background:var(--exp-soft); color:var(--exp); border-color:var(--exp)}
+.seg #btn-type-inc.on{background:var(--inc-soft); color:var(--inc); border-color:var(--inc)}
+.btn{width:100%; padding:14px; border:none; border-radius:12px; font:inherit; font-weight:800;
+  background:var(--pri); color:#fff; margin-top:14px}
+.btn.ghost{background:transparent; color:var(--muted); border:1.5px solid var(--line); margin-top:8px}
+.mic{width:42px; height:42px; border-radius:50%; border:none; background:var(--pri-soft);
+  color:var(--pri); font-size:18px; display:flex; align-items:center; justify-content:center}
+.voicecard{display:flex; align-items:center; gap:12px}
+.voicecard .bigmic{width:58px; height:58px; font-size:26px; flex:none}
+.voicecard .hint{line-height:1.7}
+.chipline{display:flex; flex-wrap:wrap; gap:8px; margin-top:10px}
+.chipline button{padding:8px 12px; border-radius:999px; border:1px dashed var(--line);
+  background:var(--bg); color:var(--muted); font:inherit; font-size:12.5px}
+
+/* ===== لیست ===== */
+.filters{display:flex; gap:8px; margin-bottom:10px; flex-wrap:wrap}
+.filters button{padding:8px 14px; border-radius:999px; border:1.5px solid var(--line);
+  background:var(--card); color:var(--muted); font:inherit; font-weight:600}
+.filters button.on{background:var(--pri); border-color:var(--pri); color:#fff}
+.filters select{width:auto; flex:1; min-width:130px; padding:8px 12px; font-size:14px}
+.item{display:flex; align-items:center; gap:12px; padding:12px; border-radius:var(--r);
+  background:var(--card); margin-bottom:8px; box-shadow:0 1px 3px rgba(15,23,42,.05)}
+.item .ico{width:42px; height:42px; border-radius:12px; background:var(--bg);
+  display:flex; align-items:center; justify-content:center; font-size:20px; flex:none}
+.item .mid{flex:1; min-width:0}
+.item .cat{font-weight:700}
+.item .note{font-size:12px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.item .meta{font-size:11.5px; color:var(--muted)}
+.item .amt{font-weight:800; white-space:nowrap; font-size:15px}
+.amt-inc{color:var(--inc)} .amt-exp{color:var(--exp)}
+.item .acts{display:flex; flex-direction:column; gap:6px}
+.item .acts button{border:none; background:var(--bg); width:32px; height:32px; border-radius:10px; font-size:14px}
+.empty{text-align:center; color:var(--muted); padding:40px 0; line-height:2}
+
+/* ===== گزارش ===== */
+.stat{display:flex; gap:10px; margin-bottom:12px}
+.stat>div{flex:1; background:var(--card); border-radius:var(--r); padding:12px; text-align:center}
+.stat .v{font-size:17px; font-weight:800; margin-top:4px}
+.bar{height:10px; border-radius:999px; background:var(--line); overflow:hidden; margin-top:6px}
+.bar i{display:block; height:100%; border-radius:999px}
+.catrow{margin-bottom:12px}
+.catrow .top{display:flex; justify-content:space-between; font-size:13.5px}
+.bars{display:flex; gap:8px; align-items:flex-end; height:150px; padding-top:8px}
+.bcol{flex:1; display:flex; flex-direction:column; justify-content:flex-end; align-items:center; gap:2px; height:100%}
+.bcol .pair{display:flex; gap:3px; align-items:flex-end; height:100%; width:100%; justify-content:center}
+.bcol .b{width:11px; border-radius:6px 6px 0 0; min-height:2px}
+.bcol .bl{font-size:10.5px; color:var(--muted)}
+.tools{display:flex; gap:8px; flex-wrap:wrap}
+.tools button{flex:1; padding:10px; border-radius:12px; border:1.5px solid var(--line);
+  background:var(--card); color:var(--ink); font:inherit; font-size:13px}
+
+/* ===== قفل ===== */
+#lockscreen{position:fixed; inset:0; background:var(--bg); z-index:300;
+  display:flex; align-items:center; justify-content:center; padding:16px}
+.lockbox{width:min(340px,94vw); background:var(--card); border-radius:24px; padding:22px;
+  text-align:center; box-shadow:0 12px 40px rgba(2,6,23,.35)}
+.lock-emoji{font-size:42px}
+.lock-title{font-weight:800; margin-top:6px}
+.lock-sub{font-size:12.5px; color:var(--muted); min-height:18px; margin-top:2px}
+.dots{display:flex; gap:9px; justify-content:center; margin:12px 0 4px; min-height:14px}
+.dots i{width:12px; height:12px; border-radius:50%; background:var(--line); display:block}
+.dots i.f{background:var(--pri)}
+.lockmsg{min-height:20px; font-size:13px; color:var(--exp); font-weight:600}
+.keypad{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:10px}
+.keypad button{padding:16px 0; border-radius:14px; border:1.5px solid var(--line);
+  background:var(--card); color:var(--ink); font:inherit; font-size:20px; font-weight:700}
+.keypad button:active{background:var(--pri-soft)}
+@keyframes shake{20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-6px)}80%{transform:translateX(6px)}}
+.lockbox.shake{animation:shake .4s}
+#lock-bio{width:100%; margin-top:10px; padding:12px; border-radius:12px; border:1.5px solid var(--line);
+  background:var(--pri-soft); color:var(--pri); font:inherit; font-weight:700}
+#lock-cancel{width:100%; margin-top:6px; padding:10px; border:none; background:none; color:var(--muted); font:inherit; font-size:13.5px}
+#lock-danger{width:100%; margin-top:8px; padding:10px; border:none; background:none;
+  color:var(--exp); font:inherit; font-size:13px; text-decoration:underline}
+
+/* ===== تب بار ===== */
+#tabbar{position:fixed; bottom:0; left:0; right:0; background:var(--card);
+  border-top:1px solid var(--line); display:flex; justify-content:space-around; align-items:center;
+  padding:8px 0 max(8px, env(safe-area-inset-bottom)); z-index:50}
+#tabbar button{border:none; background:none; font:inherit; font-size:12px; color:var(--muted);
+  display:flex; flex-direction:column; align-items:center; gap:2px; padding:4px 10px}
+#tabbar button.on{color:var(--pri); font-weight:700}
+#tabbar .fab{width:58px; height:58px; border-radius:50%; background:var(--pri); color:#fff;
+  font-size:26px; margin-top:-30px; box-shadow:0 6px 16px rgba(79,70,229,.4); justify-content:center}
+
+/* ===== نوار شنود و توست ===== */
+#listen-bar{position:fixed; top:0; left:0; right:0; background:#e11d48; color:#fff; z-index:100;
+  padding:12px; text-align:center; font-weight:700; animation:pulse 1.2s infinite}
+@keyframes pulse{50%{opacity:.75}}
+#toast{position:fixed; bottom:95px; left:50%; transform:translateX(-50%); background:#1e293b; color:#fff;
+  padding:10px 18px; border-radius:999px; font-size:13.5px; z-index:90; max-width:90%; text-align:center}
+@media (prefers-color-scheme: dark){ #toast{background:#f1f5f9; color:#1e293b} }
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <div class="t">💰 دفتر حساب — <span id="hdr-month"></span></div>
+  <div class="bal" id="hdr-balance">۰ تومان</div>
+  <div class="chips">
+    <div class="chip">درآمد ماه<b id="hdr-inc">۰</b></div>
+    <div class="chip">هزینه ماه<b id="hdr-exp">۰</b></div>
+  </div>
+</header>
+
+<main>
+<!-- ================= لیست ================= -->
+<section id="view-list" class="view">
+  <div class="filters">
+    <button data-t="all" class="on">همه</button>
+    <button data-t="expense">هزینه‌ها</button>
+    <button data-t="income">درآمدها</button>
+    <select id="list-month"></select>
+  </div>
+  <div id="list-wrap"></div>
+</section>
+
+<!-- ================= ثبت / ویرایش ================= -->
+<section id="view-add" class="view hidden">
+  <div class="card">
+    <div class="seg">
+      <button id="btn-type-exp" class="on">🔴 هزینه</button>
+      <button id="btn-type-inc">🟢 درآمد</button>
+    </div>
+
+    <label>مبلغ (تومان)</label>
+    <div class="fieldwrap">
+      <input id="f-amount" inputmode="numeric" placeholder="مثلاً 250000">
+      <button class="mic" id="mic-amount" title="ورودی صوتی مبلغ">🎙️</button>
+    </div>
+
+    <div class="row2">
+      <div>
+        <label>دسته‌بندی</label>
+        <select id="f-cat"></select>
+      </div>
+      <div>
+        <label>روش پرداخت</label>
+        <select id="f-method">
+          <option value="cash">نقدی</option>
+          <option value="card">کارت</option>
+          <option value="transfer">کارت‌به‌کارت / انتقال</option>
+          <option value="other">سایر</option>
+        </select>
+      </div>
+    </div>
+
+    <label>تاریخ</label>
+    <input type="date" id="f-date">
+    <div style="font-size:12px;color:var(--muted);margin-top:4px" id="f-date-jal"></div>
+
+    <label>توضیحات</label>
+    <div class="fieldwrap">
+      <textarea id="f-note" placeholder="اختیاری…"></textarea>
+      <button class="mic" id="mic-note" title="ورودی صوتی توضیحات">🎙️</button>
+    </div>
+
+    <button class="btn" id="btn-save">💾 ذخیره</button>
+    <button class="btn ghost hidden" id="btn-cancel">انصراف از ویرایش</button>
+  </div>
+
+  <div class="card">
+    <h3>🎙️ ثبت با گفتار</h3>
+    <div class="voicecard">
+      <button class="mic bigmic" id="mic-all">🎙️</button>
+      <div class="hint">دکمه را بزنید و جمله را بگویید؛ مبلغ، نوع، دسته، روش پرداخت و تاریخ (امروز/دیروز) خودکار تشخیص داده می‌شود.<br>مثلاً: «پنجاه هزار تومان هزینه خوراک با کارت»</div>
+    </div>
+    <div class="chipline">
+      <button class="chip" data-say='پنجاه هزار تومان هزینه خوراک با کارت'>🍽️ پنجاه هزار تومان هزینه خوراک با کارت</button>
+      <button class="chip" data-say='دیروز دویست هزار تومن خرید لباس نقدی'>👕 دیروز دویست هزار تومن خرید لباس نقدی</button>
+      <button class="chip" data-say='دو میلیون تومان حقوق گرفتم'>💼 دو میلیون تومان حقوق گرفتم</button>
+      <button class="chip" data-say='سی هزار تومان بنزین زدم'>⛽ سی هزار تومان بنزین زدم</button>
+    </div>
+  </div>
+</section>
+
+<!-- ================= گزارش ================= -->
+<section id="view-report" class="view hidden">
+  <div class="stat">
+    <div>درآمد ماه<div class="v amt-inc" id="rep-total-inc">۰</div></div>
+    <div>هزینه ماه<div class="v amt-exp" id="rep-total-exp">۰</div></div>
+  </div>
+
+  <div class="card">
+    <h3>تفکیک ماه انتخابی</h3>
+    <select id="report-month" style="margin-bottom:12px"></select>
+    <h3 style="margin-top:8px">🔴 هزینه‌ها بر اساس دسته</h3>
+    <div id="rep-cats-exp"></div>
+    <h3 style="margin-top:8px">🟢 درآمدها بر اساس دسته</h3>
+    <div id="rep-cats-inc"></div>
+  </div>
+
+  <div class="card">
+    <h3>نمودار ۶ ماه اخیر</h3>
+    <div class="bars" id="rep-bars"></div>
+    <div style="display:flex;gap:14px;font-size:12px;color:var(--muted);justify-content:center;margin-top:8px">
+      <span><i style="display:inline-block;width:10px;height:10px;border-radius:3px;background:var(--inc)"></i> درآمد</span>
+      <span><i style="display:inline-block;width:10px;height:10px;border-radius:3px;background:var(--exp)"></i> هزینه</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>پشتیبان‌گیری</h3>
+    <div class="tools">
+      <button id="btn-export-json">⬇️ خروجی JSON</button>
+      <button id="btn-export-csv">📊 خروجی CSV (اکسل)</button>
+      <button id="btn-import">⬆️ بازیابی JSON</button>
+      <input type="file" id="file-import" accept=".json" class="hidden">
+    </div>
+  </div>
+</section>
+
+<!-- ================= امنیت ================= -->
+<section id="view-security" class="view hidden">
+  <div class="card">
+    <h3>🔐 قفل برنامه</h3>
+    <div class="hint" id="sec-status" style="margin-bottom:8px">وضعیت: قفل غیرفعال</div>
+    <button class="btn" id="btn-sec-enable" style="margin-top:6px">فعال‌سازی قفل رمز</button>
+    <button class="btn ghost hidden" id="btn-sec-change">تغییر رمز</button>
+    <button class="btn ghost hidden" id="btn-sec-bio">🖐 فعال‌سازی ورود با اثر انگشت</button>
+    <button class="btn ghost hidden" id="btn-sec-disable">غیرفعال‌سازی قفل</button>
+    <div class="hint" style="margin-top:12px;line-height:1.9">
+      • رمز به‌صورت هش‌شده (SHA-256 + salt) فقط روی همین دستگاه ذخیره می‌شود.<br>
+      • اگر رمز را فراموش کنید، بعد از ۵ تلاش ناموفق گزینه «حذف کامل داده‌ها» ظاهر می‌شود (همه اطلاعات پاک می‌شود!).<br>
+      • در مرورگر کروم و نسخه اندروید، اثر انگشت از سنسور اصلی دستگاه استفاده می‌کند.
+    </div>
+  </div>
+</section>
+</main>
+
+<!-- ================= تب بار ================= -->
+<nav id="tabbar">
+  <button data-view="list" class="on">📋<span>لیست</span></button>
+  <button data-view="add" class="fab">➕</button>
+  <button data-view="report">📊<span>گزارش</span></button>
+  <button data-view="security">🔐<span>امنیت</span></button>
+</nav>
+
+<!-- ================= صفحه قفل ================= -->
+<div id="lockscreen" class="hidden">
+  <div class="lockbox" id="lock-box">
+    <div class="lock-emoji">🔐</div>
+    <div class="lock-title" id="lock-title">ورود به دفتر حساب</div>
+    <div class="lock-sub" id="lock-sub">رمز ورود را وارد کنید</div>
+    <div class="dots" id="lock-dots"></div>
+    <div class="lockmsg" id="lock-msg"></div>
+    <div class="keypad" id="lock-keypad"></div>
+    <button id="lock-bio" class="hidden">🖐 ورود با اثر انگشت</button>
+    <button id="lock-cancel" class="hidden">انصراف</button>
+    <button id="lock-danger" class="hidden">فراموشی رمز؟ حذف کامل داده‌ها و ریست برنامه</button>
+  </div>
+</div>
+
+<div id="listen-bar" class="hidden">🎙️ در حال شنیدن… (برای لغو لمس کنید)</div>
+<div id="toast" class="hidden"></div>
+
+<script>
+/* ================= ابزارهای پایه ================= */
+const $=id=>document.getElementById(id);
+const FA_D='۰۱۲۳۴۵۶۷۸۹';
+const toFa=s=>String(s).replace(/\d/g,d=>FA_D[+d]);
+const toEn=s=>String(s).replace(/[۰-۹]/g,d=>FA_D.indexOf(d)).replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d));
+const fmt=n=>new Intl.NumberFormat('fa-IR').format(n);
+const fmtC=n=>new Intl.NumberFormat('fa-IR',{notation:'compact',maximumFractionDigits:1}).format(n);
+const esc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const todayISO=(d=new Date())=>{const p=n=>String(n).padStart(2,'0');return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`};
+function toast(msg){const t=$('toast');t.textContent=msg;t.classList.remove('hidden');
+  clearTimeout(toast._h);toast._h=setTimeout(()=>t.classList.add('hidden'),2600)}
+
+/* ================= تبدیل تاریخ میلادی ↔ جلالی ================= */
+const div=(a,b)=>~~(a/b), mod=(a,b)=>a-~~(a/b)*b;
+const JBREAKS=[-61,9,38,199,426,686,756,818,1111,1181,1210,1635,2060,2097,2192,2262,2324,2394,2456,3178];
+function jalCal(jy,noLeap){
+  let bl=JBREAKS.length, gy=jy+621, leapJ=-14, jp=JBREAKS[0], jm, jump=0, leap, leapG, march, n, i;
+  if(jy<jp||jy>=JBREAKS[bl-1]) throw new Error('سال نامعتبر');
+  for(i=1;i<bl;i++){jm=JBREAKS[i];jump=jm-jp;if(jy<jm)break;
+    leapJ+=div(jump,33)*8+div(mod(jump,33),4);jp=jm}
+  n=jy-jp; leapJ+=div(n,33)*8+div(mod(n,33)+3,4);
+  if(mod(jump,33)===4&&jump-n===4)leapJ+=1;
+  leapG=div(gy,4)-div((div(gy,100)+1)*3,4)-150; march=20+leapJ-leapG;
+  if(!noLeap){ if(jump-n<6)n=n-jump+div(jump+4,33)*33;
+    leap=mod(mod(n+1,33)-1,4); if(leap===-1)leap=4 }
+  return {leap,gy,march};
+}
+function g2d(gy,gm,gd){let d=div((gy+div(gm-8,6)+100100)*1461,4)+div(153*mod(gm+9,12)+2,5)+gd-34840408;
+  return d-div(div(gy+100100+div(gm-8,6),100)*3,4)+752}
+function d2g(jdn){let j=4*jdn+139361631; j+=div(div(4*jdn+183187720,146097)*3,4)*4-3908;
+  const i=div(mod(j,1461),4)*5+308, gd=div(mod(i,153),5)+1, gm=mod(div(i,153),12)+1;
+  return {gy:div(j,1461)-100100+div(8-gm,6),gm,gd}}
+function j2d(jy,jm,jd){const r=jalCal(jy,true);return g2d(r.gy,3,r.march)+(jm-1)*31-div(jm,7)*(jm-7)+jd-1}
+function d2j(jdn){const gy=d2g(jdn).gy; let jy=gy-621; const r=jalCal(jy,false), jdn1f=g2d(gy,3,r.march);
+  let k=jdn-jdn1f, jm, jd;
+  if(k>=0){ if(k<=185){jm=1+div(k,31);jd=mod(k,31)+1;return{jy,jm,jd}} k-=186 }
+  else { jy-=1; k+=179; if(r.leap===1)k+=1 }
+  jm=7+div(k,30); jd=mod(k,30)+1; return {jy,jm,jd}}
+const jalaliOf=iso=>{const[y,m,d]=iso.split('-').map(Number);return d2j(g2d(y,m,d))};
+const MONTHS=['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];
+const fmtJ=iso=>{const j=jalaliOf(iso),p=n=>String(n).padStart(2,'0');
+  return toFa(`${j.jy}/${p(j.jm)}/${p(j.jd)}`)};
+
+/* ================= دسته‌بندی‌ها ================= */
+const EXP_CATS=[
+ ['خوراک و رستوران','🍽️',['خوراک','غذا','رستوران','کافه','ناهار','شام','صبحانه','فست فود','فست‌فود','پیتزا','برگر','قهوه','خوراکی','اسنپ فود']],
+ ['حمل‌ونقل و سوخت','🚕',['حمل','نقل','تاکسی','اسنپ','تپسی','بنزین','گازوئیل','سوخت','مترو','اتوبوس','پارکینگ','تعویض روغن']],
+ ['خرید روزمره','🛒',['خرید','سوپرمارکت','فروشگاه','هایپر','میوه','نان']],
+ ['قبض و شارژ','🧾',['قبض','برق','آب','گاز','شارژ','اینترنت','موبایل','تلفن','سیم کارت']],
+ ['پوشاک','👕',['پوشاک','لباس','کفش','مانتو','شلوار']],
+ ['سلامت و درمان','💊',['دارو','داروخانه','دکتر','پزشک','درمان','ویزیت','آزمایش','دندان','عینک']],
+ ['سرگرمی و تفریح','🎮',['سرگرمی','سینما','فیلم','بازی','تفریح','گردش','باشگاه','استخر']],
+ ['آموزش','📚',['آموزش','دوره','کلاس','کتاب','دانشگاه','مدرسه','ثبت نام','ثبت‌نام']],
+ ['اجاره مسکن','🏠',['اجاره','کرایه','رهن']],
+ ['سفر','✈️',['سفر','بلیط','بلیت','هتل','تور']],
+ ['هدیه و کمک','🎁',['هدیه','کادو','کمک','صدقه']],
+ ['سایر','📦',[]]
+];
+const INC_CATS=[
+ ['حقوق و دستمزد','💼',['حقوق','دستمزد']],
+ ['فریلنس و پروژه','🧑‍💻',['فریلنس','پروژه','مشاوره','خدمات']],
+ ['فروش','🏷️',['فروش','فروختم']],
+ ['سود و سرمایه‌گذاری','📈',['سود','سپرده','سهم','طلا','ارز']],
+ ['هدیه و دریافتی','🎁',['هدیه','کادو']],
+ ['سایر','📦',[]]
+];
+const METHODS={cash:'نقدی',card:'کارت',transfer:'کارت‌به‌کارت / انتقال',other:'سایر'};
+const catsFor=t=>t==='income'?INC_CATS:EXP_CATS;
+const catEmoji=n=>{const c=EXP_CATS.concat(INC_CATS).find(c=>c[0]===n);return c?c[1]:'📦'};
+
+/* ================= داده و ذخیره‌سازی ================= */
+const KEY='dafter_records';
+let records=(()=>{try{return JSON.parse(localStorage.getItem(KEY))||[]}catch(e){return[]}})();
+const persist=()=>localStorage.setItem(KEY,JSON.stringify(records));
+let editingId=null, formType='expense', filterType='all', filterMonth='all', reportMonth='all';
+
+/* ================= ناوبری ================= */
+function showView(v){
+  ['list','add','report','security'].forEach(x=>$('view-'+x).classList.toggle('hidden',x!==v));
+  document.querySelectorAll('#tabbar button').forEach(b=>b.classList.toggle('on',b.dataset.view===v));
+  window.scrollTo(0,0);
+}
+document.querySelectorAll('#tabbar button').forEach(b=>b.onclick=()=>showView(b.dataset.view));
+
+/* ================= فرم ================= */
+function renderCats(){
+  const sel=$('f-cat'), cur=sel.value;
+  sel.innerHTML='<option value="">انتخاب دسته…</option>'+
+    catsFor(formType).map(c=>`<option value="${esc(c[0])}">${c[1]} ${c[0]}</option>`).join('');
+  if(cur&&catsFor(formType).some(c=>c[0]===cur))sel.value=cur;
+}
+function setType(t){formType=t;
+  $('btn-type-exp').classList.toggle('on',t==='expense');
+  $('btn-type-inc').classList.toggle('on',t==='income');
+  renderCats();
+}
+ $('btn-type-exp').onclick=()=>setType('expense');
+ $('btn-type-inc').onclick=()=>setType('income');
+
+function syncDateLabel(){
+  const v=$('f-date').value;
+  $('f-date-jal').textContent=v?('📅 تاریخ شمسی: '+fmtJ(v)):'';
+}
+ $('f-date').addEventListener('input',syncDateLabel);
+
+function resetForm(){
+  editingId=null; $('f-amount').value=''; $('f-note').value='';
+  $('f-date').value=todayISO(); $('f-method').value='cash';
+  setType('expense'); renderCats(); syncDateLabel();
+  $('btn-save').textContent='💾 ذخیره'; $('btn-cancel').classList.add('hidden');
+}
+function fillForm(r){
+  editingId=r.id; setType(r.type); $('f-cat').value=r.category||'';
+  $('f-amount').value=r.amount.toLocaleString('en-US');
+  $('f-date').value=r.date; $('f-method').value=r.method||'cash'; $('f-note').value=r.note||'';
+  syncDateLabel();
+  $('btn-save').textContent='💾 ذخیره تغییرات'; $('btn-cancel').classList.remove('hidden');
+}
+ $('btn-cancel').onclick=()=>{resetForm();showView('list')};
+
+function parseAmountInput(v){const s=toEn(v).replace(/[^\d]/g,'');return s?parseInt(s,10):0}
+ $('btn-save').onclick=()=>{
+  const amt=parseAmountInput($('f-amount').value);
+  if(!amt){toast('⚠️ مبلغ را وارد کنید');return}
+  const cat=$('f-cat').value||'سایر';
+  const now=Date.now();
+  if(editingId){
+    const i=records.findIndex(r=>r.id===editingId);
+    const old=records[i];
+    records[i]={...old,type:formType,amount:amt,category:cat,date:$('f-date').value||todayISO(),
+      method:$('f-method').value,note:$('f-note').value.trim(),updatedAt:now};
+    toast('✅ ویرایش شد');
+  }else{
+    records.push({id:uid(),type:formType,amount:amt,category:cat,date:$('f-date').value||todayISO(),
+      method:$('f-method').value,note:$('f-note').value.trim(),createdAt:now,updatedAt:now});
+    toast('✅ ثبت شد');
+  }
+  persist(); resetForm(); renderAll(); showView('list');
+};
+
+/* ================= هدر ================= */
+function renderHeader(){
+  const j=jalaliOf(todayISO());
+  $('hdr-month').textContent=MONTHS[j.jm-1]+' '+toFa(j.jy);
+  const m=records.filter(r=>{const q=jalaliOf(r.date);return q.jy===j.jy&&q.jm===j.jm});
+  const inc=m.filter(r=>r.type==='income').reduce((s,r)=>s+r.amount,0);
+  const exp=m.filter(r=>r.type==='expense').reduce((s,r)=>s+r.amount,0);
+  const bal=records.reduce((s,r)=>s+(r.type==='income'?r.amount:-r.amount),0);
+  $('hdr-balance').textContent=fmt(bal)+' تومان';
+  $('hdr-inc').textContent=fmt(inc);
+  $('hdr-exp').textContent=fmt(exp);
+}
+
+/* ================= لیست ================= */
+function monthOptions(){
+  const cur=jalaliOf(todayISO()); const map=new Map();
+  map.set(`${cur.jy}-${cur.jm}`,`${MONTHS[cur.jm-1]} ${toFa(cur.jy)}`);
+  records.forEach(r=>{const j=jalaliOf(r.date);map.set(`${j.jy}-${j.jm}`,`${MONTHS[j.jm-1]} ${toFa(j.jy)}`)});
+  return [...map.entries()].sort((a,b)=>{
+    const A=a[0].split('-').map(Number),B=b[0].split('-').map(Number);
+    return (B[0]-A[0])||(B[1]-A[1])});
+}
+function buildMonthSelects(){
+  const opts=monthOptions();
+  const html='<option value="all">همه ماه‌ها</option>'+
+    opts.map(([v,l])=>`<option value="${v}">${l}</option>`).join('');
+  [['list-month',filterMonth],['report-month',reportMonth]].forEach(([id,sel])=>{
+    const el=$(id); el.innerHTML=html;
+    el.value=(sel!=='all'&&opts.some(([v])=>v===sel))?sel:(opts.length?opts[0][0]:'all');
+    if(id==='list-month')filterMonth=el.value; else reportMonth=el.value;
+  });
+}
+function renderList(){
+  const wrap=$('list-wrap');
+  let arr=[...records].sort((a,b)=>b.date.localeCompare(a.date)||(b.createdAt||0)-(a.createdAt||0));
+  if(filterType!=='all')arr=arr.filter(r=>r.type===filterType);
+  if(filterMonth!=='all'){
+    const[jy,jm]=filterMonth.split('-').map(Number);
+    arr=arr.filter(r=>{const q=jalaliOf(r.date);return q.jy===jy&&q.jm===jm});
+  }
+  if(!arr.length){wrap.innerHTML='<div class="empty">📭 هنوز موردی ثبت نشده است.<br>از دکمه ➕ پایین صفحه شروع کنید!</div>';return}
+  wrap.innerHTML=arr.map(r=>`
+    <div class="item">
+      <div class="ico">${catEmoji(r.category)}</div>
+      <div class="mid" data-act="edit" data-id="${r.id}">
+        <div class="cat">${esc(r.category)}</div>
+        ${r.note?`<div class="note">${esc(r.note)}</div>`:''}
+        <div class="meta">${fmtJ(r.date)} • ${METHODS[r.method]||''}</div>
+      </div>
+      <div class="amt ${r.type==='income'?'amt-inc':'amt-exp'}">
+        ${r.type==='income'?'+':'−'}${fmt(r.amount)}<br><span style="font-size:10px;font-weight:400">تومان</span>
+      </div>
+      <div class="acts">
+        <button data-act="edit" data-id="${r.id}" title="ویرایش">✏️</button>
+        <button data-act="del" data-id="${r.id}" title="حذف">🗑️</button>
+      </div>
+    </div>`).join('');
+}
+ $('list-wrap').addEventListener('click',e=>{
+  const b=e.target.closest('[data-act]'); if(!b)return;
+  const id=b.dataset.id, act=b.dataset.act;
+  if(act==='edit'){const r=records.find(r=>r.id===id);if(r){fillForm(r);showView('add')}}
+  if(act==='del'&&confirm('این مورد حذف شود؟')){
+    records=records.filter(r=>r.id!==id); persist(); renderAll(); toast('🗑️ حذف شد');
+  }
+});
+document.querySelectorAll('.filters button[data-t]').forEach(b=>b.onclick=()=>{
+  filterType=b.dataset.t;
+  document.querySelectorAll('.filters button[data-t]').forEach(x=>x.classList.toggle('on',x===b));
+  renderList();
+});
+ $('list-month').addEventListener('change',e=>{filterMonth=e.target.value;renderList()});
+
+/* ================= گزارش ================= */
+function renderReport(){
+  const [jy,jm]=reportMonth==='all'?[null,null]:reportMonth.split('-').map(Number);
+  const inMonth=r=>{const q=jalaliOf(r.date);return jy===null||(q.jy===jy&&q.jm===jm)};
+  const mrec=records.filter(inMonth);
+  const inc=mrec.filter(r=>r.type==='income').reduce((s,r)=>s+r.amount,0);
+  const exp=mrec.filter(r=>r.type==='expense').reduce((s,r)=>s+r.amount,0);
+  $('rep-total-inc').textContent=fmt(inc)+' تومان';
+  $('rep-total-exp').textContent=fmt(exp)+' تومان';
+
+  function catBars(type,target){
+    const sum={};
+    mrec.filter(r=>r.type===type).forEach(r=>sum[r.category]=(sum[r.category]||0)+r.amount);
+    const rows=Object.entries(sum).sort((a,b)=>b[1]-a[1]);
+    const max=rows.length?rows[0][1]:1;
+    $(target).innerHTML=rows.length?rows.map(([c,v])=>`
+      <div class="catrow">
+        <div class="top"><span>${catEmoji(c)} ${esc(c)}</span><b>${fmt(v)}</b></div>
+        <div class="bar"><i style="width:${Math.round(v/max*100)}%;background:var(--${type==='income'?'inc':'exp'})"></i></div>
+      </div>`).join(''):'<div style="color:var(--muted);font-size:13px;padding:6px 0">موردی ثبت نشده</div>';
+  }
+  catBars('expense','rep-cats-exp'); catBars('income','rep-cats-inc');
+
+  let cur=jalaliOf(todayISO()); const months=[];
+  for(let i=0;i<6;i++){months.unshift({...cur});cur.jm--;if(cur.jm===0){cur.jm=12;cur.jy--}}
+  const data=months.map(m=>{
+    const rs=records.filter(r=>{const q=jalaliOf(r.date);return q.jy===m.jy&&q.jm===m.jm});
+    return {label:MONTHS[m.jm-1],
+      inc:rs.filter(r=>r.type==='income').reduce((s,r)=>s+r.amount,0),
+      exp:rs.filter(r=>r.type==='expense').reduce((s,r)=>s+r.amount,0)};
+  });
+  const max=Math.max(1,...data.map(d=>Math.max(d.inc,d.exp)));
+  $('rep-bars').innerHTML=data.map(d=>`
+    <div class="bcol">
+      <div class="pair">
+        <div class="b" style="height:${Math.round(d.inc/max*100)}%;background:var(--inc)" title="${fmt(d.inc)}"></div>
+        <div class="b" style="height:${Math.round(d.exp/max*100)}%;background:var(--exp)" title="${fmt(d.exp)}"></div>
+      </div>
+      <span class="bl">${d.label}</span>
+    </div>`).join('');
+}
+ $('report-month').addEventListener('change',e=>{reportMonth=e.target.value;renderReport()});
+
+/* ================= پشتیبان‌گیری ================= */
+function download(name,text,type){
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([text],{type}));
+  a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+ $('btn-export-json').onclick=()=>{download('dafter-backup.json',JSON.stringify(records,null,2),'application/json');toast('⬇️ خروجی گرفته شد')};
+ $('btn-export-csv').onclick=()=>{
+  const head=['نوع','مبلغ','دسته','تاریخ میلادی','تاریخ شمسی','روش پرداخت','توضیحات'];
+  const rows=records.map(r=>[r.type==='income'?'درآمد':'هزینه',r.amount,r.category,r.date,fmtJ(r.date),METHODS[r.method]||'',r.note||'']);
+  const csv='\uFEFF'+[head,...rows].map(cols=>cols.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\r\n');
+  download('dafter-records.csv',csv,'text/csv;charset=utf-8');toast('📊 خروجی گرفته شد');
+};
+ $('btn-import').onclick=()=>$('file-import').click();
+ $('file-import').addEventListener('change',e=>{
+  const f=e.target.files[0]; if(!f)return;
+  const rd=new FileReader();
+  rd.onload=()=>{try{
+      const arr=JSON.parse(rd.result);
+      if(!Array.isArray(arr))throw 0;
+      if(!confirm(`${fmt(arr.length)} مورد بازیابی شود؟ داده‌های فعلی جایگزین می‌شوند.`))return;
+      records=arr; persist(); renderAll(); toast('✅ بازیابی شد');
+    }catch(err){toast('❌ فایل نامعتبر است')}
+  };
+  rd.readAsText(f); e.target.value='';
+});
+
+/* ================= پردازش متن فارسی (مغز تشخیص) ================= */
+function normalizeFa(s){return toEn(String(s).replace(/\u200c/g,' ').replace(/[يى]/g,'ی').replace(/ك/g,'ک').replace(/\s+/g,' ').trim())}
+const SMALL={'صفر':0,'یک':1,'دو':2,'سه':3,'چهار':4,'پنج':5,'شش':6,'شیش':6,'هفت':7,'هشت':8,'نه':9,
+ 'ده':10,'یازده':11,'دوازده':12,'سیزده':13,'چهارده':14,'پانزده':15,'پونزده':15,'شانزده':16,'شونزده':16,
+ 'هفده':17,'هجده':18,'هیجده':18,'نوزده':19,'بیست':20,'سی':30,'چهل':40,'پنجاه':50,'شصت':60,
+ 'هفتاد':70,'هشتاد':80,'نود':90};
+const HUNDREDS={'صد':100,'دویست':200,'سیصد':300,'چهارصد':400,'پانصد':500,'پونصد':500,'ششصد':600,'هفتصد':700,'هشتصد':800,'نهصد':900};
+const SCALES={'هزار':1000,'میلیون':1e6,'میلیارد':1e9};
+
+function parseNumberWords(t){
+  let total=0,cur=0;
+  t.split(/\s+/).filter(w=>w&&w!=='و').forEach(w=>{
+    let v=null;
+    if(/^\d+$/.test(w))v=parseInt(w,10);
+    else if(SMALL[w]!=null)v=SMALL[w];
+    else if(HUNDREDS[w]!=null)v=HUNDREDS[w];
+    if(v!=null){cur+=v;return}
+    if(SCALES[w]){total+=Math.max(cur,1)*SCALES[w];cur=0}
+  });
+  return total+cur;
+}
+function extractAmount(t){
+  const re=/\d+(?:[,،\s]\d+)*/g; let m,cands=[];
+  while((m=re.exec(t))){
+    let val=parseInt(m[0].replace(/[,،\s]/g,''),10);
+    const after=t.substr(re.lastIndex,15);
+    if(/هزار/.test(after))val*=1000;
+    else if(/میلیون/.test(after))val*=1e6;
+    else if(/میلیارد/.test(after))val*=1e9;
+    const prefer=/تومان|تومن|ریال|هزار|میلیون|میلیارد/.test(after);
+    cands.push({val,prefer});
+  }
+  if(cands.length){const best=cands.find(c=>c.prefer);
+    return (best||cands.sort((a,b)=>b.val-a.val)[0]).val}
+  return parseNumberWords(t);
+}
+function detectType(t){
+  const inc=['درآمد','دریافتی','دریافت','گرفتم','فروختم','واریز','واریزی','حقوق','سود'];
+  const exp=['هزینه','خرج','پرداخت','خرید','خریدم','دادم','پرداختم','خرج کردم','هزینه کردم'];
+  let i=0,e=0; inc.forEach(k=>{if(t.includes(k))i++}); exp.forEach(k=>{if(t.includes(k))e++});
+  return i>e?'income':'expense';
+}
+function detectCategory(t,type){
+  for(const[name,,kws]of catsFor(type)){if(kws.some(k=>t.includes(k)))return name}
+  return null;
+}
+function detectMethod(t){
+  if(/کارت به کارت|کارت‌به‌کارت|انتقال|حواله|ساتنا|پایا/.test(t))return'transfer';
+  if(/کارت|کارتخوان/.test(t))return'card';
+  if(/نقد|کیف پول/.test(t))return'cash';
+  return null;
+}
+function detectDate(t){
+  const iso=off=>{const d=new Date();d.setDate(d.getDate()+off);return todayISO(d)};
+  if(/پریروز/.test(t))return iso(-2);
+  if(/دیروز/.test(t))return iso(-1);
+  if(/امروز/.test(t))return iso(0);
+  let m=t.match(/(\d+)\s*روز\s*پیش/);   if(m)return iso(-parseInt(m[1],10));
+  m=t.match(/(\d+)\s*هفته\s*پیش/);      if(m)return iso(-parseInt(m[1],10)*7);
+  return null;
+}
+function parseVoiceEntry(raw){
+  const t=normalizeFa(raw);
+  return {amount:extractAmount(t),type:detectType(t),category:detectCategory(t,detectType(t)),
+    method:detectMethod(t),date:detectDate(t),raw};
+}
+function applyVoice(field,raw){
+  if(field==='note'){$('f-note').value=raw;toast('📝 توضیحات ثبت شد');return}
+  if(field==='amount'){
+    const a=extractAmount(normalizeFa(raw));
+    if(a>0){$('f-amount').value=a.toLocaleString('en-US');toast('💰 مبلغ: '+fmt(a))}
+    else toast('مبلغ شناسایی نشد؛ دستی وارد کنید');
+    return;
+  }
+  const p=parseVoiceEntry(raw);
+  setType(p.type);
+  if(p.category)$('f-cat').value=p.category;
+  if(p.date){$('f-date').value=p.date;syncDateLabel()}
+  if(p.method)$('f-method').value=p.method;
+  if(p.amount>0)$('f-amount').value=p.amount.toLocaleString('en-US');
+  if(!$('f-note').value)$('f-note').value=raw;
+  toast(p.amount>0
+    ?`🎙️ شناسایی شد: ${p.type==='expense'?'هزینه':'درآمد'} ${fmt(p.amount)}${p.category?' • '+p.category:''} — بررسی و ذخیره کنید`
+    :'مبلغ شناسایی نشد؛ بقیه فیلدها پر شد. مبلغ را دستی وارد کنید');
+}
+document.querySelectorAll('.chip[data-say]').forEach(b=>b.onclick=()=>{showView('add');applyVoice('all',b.dataset.say)});
+
+/* ================= تشخیص گفتار (وب + اندروید نیتیو) ================= */
+const SRCls=window.SpeechRecognition||window.webkitSpeechRecognition;
+const SRPlugin=(window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.SpeechRecognition)||null;
+let recog=null,listening=false;
+
+function setListenUI(on){listening=on;$('listen-bar').classList.toggle('hidden',!on)}
+
+async function toggleVoice(field){
+  if(listening){
+    try{recog?recog.stop():SRPlugin.stop()}catch(e){}
+    setListenUI(false);return;
+  }
+  /* ---- مسیر نیتیو: فقط داخل APK (کاپسیتور) ---- */
+  if(SRPlugin){
+    setListenUI(true);
+    try{
+      const p=await SRPlugin.requestPermissions({permissions:['recordAudio']});
+      const st=(p&&p.speechRecognition)||'granted';
+      if(st!=='granted'){toast('دسترسی به میکروفون داده نشد');}
+      else{
+        const r=await SRPlugin.start({language:'fa-IR',maxResults:2,partialResults:false,popup:true});
+        const t=r&&r.matches&&r.matches[0];
+        if(t)applyVoice(field,t.trim());else toast('گفتاری شناسایی نشد');
+      }
+    }catch(e){toast('❌ خطا در تشخیص گفتار (اپ Google نصب است؟)')}
+    setListenUI(false);return;
+  }
+  /* ---- مسیر وب: کروم ---- */
+  if(!SRCls){toast('⚠️ این مرورگر از ورودی صوتی پشتیبانی نمی‌کند. از دکمه‌های مثال استفاده کنید.');return}
+  recog=new SRCls(); recog.lang='fa-IR'; recog.interimResults=false; recog.maxAlternatives=1;
+  recog.onstart=()=>setListenUI(true);
+  recog.onend=()=>setListenUI(false);
+  recog.onerror=e=>{setListenUI(false);
+    toast(e.error==='not-allowed'?'دسترسی به میکروفون داده نشد':'❌ خطا در تشخیص گفتار (به اینترنت نیاز است)')};
+  recog.onresult=e=>applyVoice(field,e.results[0][0].transcript.trim());
+  try{recog.start()}catch(e){}
+}
+['mic-all','mic-amount','mic-note'].forEach(id=>$(id).onclick=()=>toggleVoice(id.replace('mic-','')));
+ $('listen-bar').onclick=()=>{try{recog?recog.stop():SRPlugin.stop()}catch(e){}setListenUI(false)};
+
+/* ================================================================
+   🔐 قفل رمز + اثر انگشت
+   PIN: هش SHA-256 + salt در localStorage
+   بیومتریک: داخل APK → پلاگین نیتیو؛ در مرورگر → WebAuthn
+   ================================================================ */
+const LKEY='dafter_lock';
+let lockConf=(()=>{try{return JSON.parse(localStorage.getItem(LKEY))||{}}catch(e){return{}}})();
+const saveLock=()=>localStorage.setItem(LKEY,JSON.stringify(lockConf));
+
+async function sha256hex(s){
+  try{
+    if(window.crypto&&crypto.subtle){
+      const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));
+      return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');
+    }
+  }catch(e){}
+  let h=5381; for(const c of s) h=(((h<<5)+h)+c.charCodeAt(0))>>>0;
+  return 'fb'+h.toString(16);
+}
+const hashPin=(pin,salt)=>sha256hex(salt+':'+pin);
+
+const b64url=buf=>btoa(String.fromCharCode(...new Uint8Array(buf)))
+  .replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+function b64urlToBuf(s){s=s.replace(/-/g,'+').replace(/_/g,'/');while(s.length%4)s+='=';
+  return Uint8Array.from(atob(s),c=>c.charCodeAt(0))}
+
+function nativeBio(){
+  return (window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.NativeBiometric)||null;
+}
+async function bioAvailable(){
+  const P=nativeBio();
+  if(P){try{const r=await P.isAvailable();return !!(r&&(r.value??r.isAvailable))}catch(e){return false}}
+  if(window.PublicKeyCredential&&PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable){
+    try{return await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable()}catch(e){}
+  }
+  return false;
+}
+async function bioVerify(){
+  const P=nativeBio();
+  if(P){
+    await P.verifyIdentity({title:'احراز هویت',subtitle:'دفتر حساب',
+      reason:'برای ورود به برنامه',useFallback:true,maxAttempts:5});
+    return true;
+  }
+  const cred=await navigator.credentials.get({publicKey:{
+    challenge:crypto.getRandomValues(new Uint8Array(32)),
+    userVerification:'required',timeout:60000,
+    allowCredentials:[{type:'public-key',id:b64urlToBuf(lockConf.biometricId)}]
+  }});
+  return !!(cred&&b64url(cred.rawId)===lockConf.biometricId);
+}
+async function webauthnRegister(){
+  const cred=await navigator.credentials.create({publicKey:{
+    challenge:crypto.getRandomValues(new Uint8Array(32)),
+    rp:{name:'دفتر حساب'},
+    user:{id:crypto.getRandomValues(new Uint8Array(16)),name:'dafter-user',displayName:'کاربر دفتر حساب'},
+    pubKeyCredParams:[{type:'public-key',alg:-7},{type:'public-key',alg:-257}],
+    authenticatorSelection:{authenticatorAttachment:'platform',userVerification:'required',residentKey:'required'},
+    timeout:60000
+  }});
+  return b64url(cred.rawId);
+}
+
+let lockMode=null,lockBuf='',lockTemp='',lockResolve=null,lockTries=0,lockCool=0,autoLockT=null;
+const FA_NUM={'۱':'1','۲':'2','۳':'3','۴':'4','۵':'5','۶':'6','۷':'7','۸':'8','۹':'9','۰':'0'};
+
+function buildKeypad(){
+  const keys=['۱','۲','۳','۴','۵','۶','۷','۸','۹','⌫','۰','✓'];
+  $('lock-keypad').innerHTML=keys.map(k=>`<button data-k="${k}">${k}</button>`).join('');
+}
+ $('lock-keypad').addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(!b)return; pressKey(b.dataset.k);
+});
+async function pressKey(k){
+  if(Date.now()<lockCool){setMsg('⏳ '+Math.ceil((lockCool-Date.now())/1000)+' ثانیه صبر کنید');return}
+  if(k==='⌫'){lockBuf=lockBuf.slice(0,-1);renderDots();return}
+  if(k==='✓'){submitLock();return}
+  if(lockBuf.length>=8)return;
+  lockBuf+=(FA_NUM[k]??k); renderDots();
+  const m=lockMode;
+  if((m==='unlock'||m==='confirm')&&lockConf.pinLen&&lockBuf.length===lockConf.pinLen)submitLock();
+  if(m==='set1'&&lockBuf.length===8)submitLock();
+  if(m==='set2'&&lockTemp.length===lockBuf.length)submitLock();
+}
+function renderDots(){
+  const total=(lockMode==='set1'||lockMode==='set2')?8:(lockConf.pinLen||4);
+  let html='';
+  for(let i=0;i<total;i++)html+=`<i class="${i<lockBuf.length?'f':''}"></i>`;
+  $('lock-dots').innerHTML=html;
+}
+const setMsg=m=>$('lock-msg').textContent=m;
+const setTitle=t=>$('lock-title').textContent=t;
+function shake(){const b=$('lock-box');b.classList.remove('shake');void b.offsetWidth;b.classList.add('shake')}
+
+function openLock(mode,sub){
+  if(!$('lockscreen').classList.contains('hidden'))return Promise.resolve(false);
+  lockMode=mode;lockBuf='';lockTemp='';lockTries=0;
+  setTitle(mode==='set1'?'رمز جدید (۴ تا ۸ رقم)':mode==='set2'?'رمز جدید را تکرار کنید':
+    mode==='confirm'?'رمز فعلی را وارد کنید':'ورود به دفتر حساب');
+  $('lock-sub').textContent=sub||(mode==='unlock'?'رمز ورود را وارد کنید':'');
+  $('lock-danger').classList.add('hidden');
+  $('lock-bio').classList.toggle('hidden',!(mode==='unlock'&&lockConf.biometric));
+  $('lock-cancel').classList.toggle('hidden',mode==='unlock');
+  $('lockscreen').classList.remove('hidden');
+  renderDots();setMsg('');
+  return new Promise(r=>lockResolve=r);
+}
+function closeLock(ok){
+  const r=lockResolve;lockResolve=null;
+  lockMode=null;lockBuf='';lockTemp='';
+  $('lockscreen').classList.add('hidden');
+  $('lock-danger').classList.add('hidden');setMsg('');
+  if(r)r(!!ok);
+}
+ $('lock-cancel').onclick=()=>closeLock(false);
+ $('lock-danger').onclick=()=>{
+  if(!confirm('همه داده‌ها (ثبت‌ها و رمز) برای همیشه حذف شوند؟'))return;
+  if(!confirm('مطمئنید؟ این عمل قابل بازگشت نیست!'))return;
+  localStorage.clear();location.reload();
+};
+ $('lock-bio').onclick=async()=>{
+  try{await bioVerify();toast('🖐 ورود موفق');closeLock(true)}
+  catch(e){setMsg('احراز هویت ناموفق بود؛ رمز را وارد کنید')}
+};
+async function submitLock(){
+  if(lockBuf.length<4){setMsg('حداقل ۴ رقم وارد کنید');shake();return}
+  if(Date.now()<lockCool){setMsg('⏳ '+Math.ceil((lockCool-Date.now())/1000)+' ثانیه صبر کنید');return}
+  if(lockMode==='unlock'||lockMode==='confirm'){
+    const h=await hashPin(lockBuf,lockConf.salt);
+    if(h===lockConf.pinHash){lockTries=0;closeLock(true)}
+    else wrongPin();
+    return;
+  }
+  if(lockMode==='set1'){lockTemp=lockBuf;lockBuf='';lockMode='set2';
+    setTitle('رمز جدید را تکرار کنید');setMsg('');renderDots();return}
+  if(lockMode==='set2'){
+    if(lockBuf===lockTemp){
+      const salt=uid();
+      lockConf={enabled:true,salt,pinHash:await hashPin(lockBuf,salt),pinLen:lockBuf.length,biometric:false,biometricId:null};
+      saveLock();closeLock(true);renderSecurity();
+      toast('🔐 قفل فعال شد — رمز را جایی یادداشت کنید');
+      if(await bioAvailable())
+        toast('💡 حالا می‌توانید ورود با اثر انگشت را هم فعال کنید');
+    }else{
+      lockBuf='';lockTemp='';lockMode='set1';
+      setTitle('رمز جدید (۴ تا ۸ رقم)');setMsg('مطابقت نداشت؛ از نو وارد کنید');
+      renderDots();shake();
+    }
+  }
+}
+function wrongPin(){
+  lockTries++;lockBuf='';renderDots();setMsg('رمز اشتباه است');shake();
+  if(lockTries>=5){
+    lockCool=Date.now()+30000;
+    setMsg('۵ تلاش ناموفق؛ ۳۰ ثانیه قفل شدید');
+    $('lock-danger').classList.remove('hidden');
+    const t=setInterval(()=>{const s=Math.ceil((lockCool-Date.now())/1000);
+      if(s<=0)clearInterval(t);else setMsg('⏳ '+s+' ثانیه صبر کنید')},1000);
+  }
+}
+
+/* ---------- تنظیمات امنیت ---------- */
+function renderSecurity(){
+  const on=!!lockConf.enabled;
+  $('sec-status').textContent=on
+    ?('وضعیت: قفل فعال ✅'+(lockConf.biometric?' • ورود با اثر انگشت روشن 🖐':''))
+    :'وضعیت: قفل غیرفعال';
+  $('btn-sec-enable').classList.toggle('hidden',on);
+  $('btn-sec-change').classList.toggle('hidden',!on);
+  $('btn-sec-disable').classList.toggle('hidden',!on);
+  $('btn-sec-bio').classList.toggle('hidden',!on);
+  $('btn-sec-bio').textContent=lockConf.biometric?'🖐 غیرفعال‌سازی ورود با اثر انگشت':'🖐 فعال‌سازی ورود با اثر انگشت';
+}
+ $('btn-sec-enable').onclick=()=>{
+  if(lockConf.enabled){toast('قفل فعال است؛ از «تغییر رمز» استفاده کنید');return}
+  openLock('set1');
+};
+ $('btn-sec-change').onclick=async()=>{
+  if(!lockConf.enabled)return;
+  const ok=await openLock('confirm','برای تغییر رمز، رمز فعلی را وارد کنید');
+  if(ok)openLock('set1');
+};
+ $('btn-sec-disable').onclick=async()=>{
+  if(!lockConf.enabled)return;
+  const ok=await openLock('confirm','برای غیرفعال‌سازی، رمز را وارد کنید');
+  if(!ok)return;
+  lockConf={};saveLock();renderSecurity();toast('🔓 قفل غیرفعال شد');
+};
+ $('btn-sec-bio').onclick=async()=>{
+  if(!lockConf.enabled){toast('اول قفل رمز را فعال کنید');return}
+  if(lockConf.biometric){
+    lockConf.biometric=false;lockConf.biometricId=null;saveLock();renderSecurity();
+    toast('ورود با اثر انگشت غیرفعال شد');return;
+  }
+  if(!(await bioAvailable())){toast('این دستگاه از بیومتریک پشتیبانی نمی‌کند');return}
+  try{
+    if(nativeBio()){
+      await nativeBio().verifyIdentity({title:'فعال‌سازی',subtitle:'دفتر حساب',
+        reason:'تأیید برای فعال‌سازی ورود بیومتریک',useFallback:true});
+    }else{
+      lockConf.biometricId=await webauthnRegister();
+    }
+    lockConf.biometric=true;saveLock();renderSecurity();
+    toast('🖐 ورود با اثر انگشت فعال شد');
+  }catch(e){toast('فعال‌سازی ناموفق بود')}
+};
+
+/* ---------- قفل خودکار وقتی برنامه به پس‌زمینه می‌رود ---------- */
+document.addEventListener('visibilitychange',()=>{
+  if(document.hidden){
+    autoLockT=setTimeout(()=>{if(lockConf.enabled&&!lockMode)openLock('unlock')},60000);
+  }else clearTimeout(autoLockT);
+});
+
+/* ================= شروع ================= */
+buildKeypad(); renderSecurity();
+setType('expense'); resetForm(); renderAll(); showView('list');
+if(lockConf.enabled)openLock('unlock');
+
+/* ================= Service Worker (نصب و کار آفلاین) ================= */
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+}
+</script>
+</body>
+</html>
